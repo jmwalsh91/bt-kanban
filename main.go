@@ -58,11 +58,18 @@ func (m *Model) initList(width, height int) {
 		Task{status: done, title: "Invade Japan", description: "All their islands are belong to us."},
 	})
 	//in progress
-	m.lists[todo].Title = "In Progress"
-	m.lists[todo].SetItems([]list.Item{
+	m.lists[inProgress].Title = "In Progress"
+	m.lists[inProgress].SetItems([]list.Item{
 		Task{status: todo, title: "Drink Tea", description: "Good leaves."},
 		Task{status: inProgress, title: "Make plans", description: "One year, two year, ten year, thirty year."},
 		Task{status: done, title: "Make Boats", description: "Boats are good."},
+	})
+	//done
+	m.lists[done].Title = "Done"
+	m.lists[done].SetItems([]list.Item{
+		Task{status: todo, title: "Eat Food", description: "Nom Nom the chips"},
+		Task{status: inProgress, title: "Build Wall", description: "Because."},
+		Task{status: done, title: "Have flood", description: "So much water."},
 	})
 
 }
@@ -79,6 +86,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
+		if !m.loaded {
+			m.initList(msg.Width, msg.Height)
+			m.loaded = true
+		}
 		m.initList(msg.Width, msg.Height)
 	}
 	var cmd tea.Cmd
