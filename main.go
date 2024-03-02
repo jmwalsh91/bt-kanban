@@ -61,8 +61,24 @@ func New() *Model {
 	return &Model{}
 }
 
+func (m *Model) Next() {
+	if m.focused == done {
+		m.focused = todo
+	} else {
+		m.focused++
+	}
+}
+
+func (m *Model) Prev() {
+	if m.focused == todo {
+		m.focused = done
+	} else {
+		m.focused--
+	}
+}
+
 func (m *Model) initList(width, height int) {
-	defaultList := list.New([]list.Item{}, list.NewDefaultDelegate(), width/divisor, height)
+	defaultList := list.New([]list.Item{}, list.NewDefaultDelegate(), width/divisor, height-divisor/2)
 	defaultList.SetShowHelp(false)
 
 	m.lists = []list.Model{defaultList, defaultList, defaultList}
@@ -100,6 +116,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "esc", "ctrl+c":
 			return m, tea.Quit
+		case "left", "h", "shift+tab":
+			m.Prev()
+		case "right", "l", "tab":
+			m.Next()
 		}
 	case tea.WindowSizeMsg:
 		if !m.loaded {
@@ -120,12 +140,26 @@ func (m Model) View() string {
 		doneView := m.lists[done].View()
 		//switch
 		switch m.focused {
+		case inProgress:
+			return lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				columnStyle.Render(todoView),
+				focusedStyle.Render(inProgressView),
+				columnStyle.Render(doneView))
+		case done:
+			return lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				columnStyle.Render(todoView),
+				columnStyle.Render(inProgressView),
+				focusedStyle.Render(doneView))
+
 		default:
 			return lipgloss.JoinHorizontal(
-				lipgloss.Left, focusedStyle.Render(todoView), columnStyle.Render(inProgressView), columnStyle.Render(doneView))
-
+				lipgloss.Left,
+				focusedStyle.Render(todoView),
+				columnStyle.Render(inProgressView),
+				columnStyle.Render(doneView))
 		}
-		return lipgloss.JoinHorizontal(lipgloss.Left, todoView, inProgressView, doneView)
 	} else {
 		return "Loading..."
 	}
