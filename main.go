@@ -91,7 +91,11 @@ func (m *Model) MoveToNext() tea.Msg {
 	m.lists[selectedTask.status].RemoveItem(m.lists[m.focused].Index())
 	selectedTask.Next()
 	m.lists[selectedTask.status].InsertItem(len(m.lists[selectedTask.status].Items())-1, list.Item(selectedTask))
+	return nil
+}
 
+func (m *Model) DeleteTask() tea.Msg {
+	m.lists[m.focused].RemoveItem(m.lists[m.focused].Index())
 	return nil
 }
 
@@ -138,7 +142,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Prev()
 		case "right", "l", "tab":
 			m.Next()
+		case "enter":
+			m.MoveToNext()
+		case "backspace":
+			m.DeleteTask()
 		}
+
 	case tea.WindowSizeMsg:
 		if !m.loaded {
 			m.initList(msg.Width, msg.Height)
