@@ -18,6 +18,20 @@ const (
 	done
 )
 
+/*
+*
+styling
+*
+*/
+var (
+	columnStyle  = lipgloss.NewStyle().Padding(1, 2)
+	focusedStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("62")).
+			Border(lipgloss.RoundedBorder())
+	helpStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("241"))
+)
+
 type Task struct {
 	status      status
 	title       string
@@ -49,6 +63,8 @@ func New() *Model {
 
 func (m *Model) initList(width, height int) {
 	defaultList := list.New([]list.Item{}, list.NewDefaultDelegate(), width/divisor, height)
+	defaultList.SetShowHelp(false)
+
 	m.lists = []list.Model{defaultList, defaultList, defaultList}
 	//init todos
 	m.lists[todo].Title = "Options"
@@ -99,7 +115,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	if m.loaded {
-		return lipgloss.JoinHorizontal(lipgloss.Left, m.lists[todo].View(), m.lists[inProgress].View(), m.lists[done].View())
+		todoView := m.lists[todo].View()
+		inProgressView := m.lists[inProgress].View()
+		doneView := m.lists[done].View()
+		//switch
+		switch m.focused {
+		default:
+			return lipgloss.JoinHorizontal(
+				lipgloss.Left, focusedStyle.Render(todoView), columnStyle.Render(inProgressView), columnStyle.Render(doneView))
+
+		}
+		return lipgloss.JoinHorizontal(lipgloss.Left, todoView, inProgressView, doneView)
 	} else {
 		return "Loading..."
 	}
