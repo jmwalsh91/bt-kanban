@@ -6,10 +6,12 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type status int
 
+const divisor = 3
 const (
 	todo status = iota
 	inProgress
@@ -35,8 +37,10 @@ func (t Task) Description() string {
 }
 
 type Model struct {
-	list list.Model
-	err  error
+	focused status
+	lists   []list.Model
+	err     error
+	loaded  bool
 }
 
 func New() *Model {
@@ -44,12 +48,21 @@ func New() *Model {
 }
 
 func (m *Model) initList(width, height int) {
-	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), width, height)
-	m.list.Title = "Options"
-	m.list.SetItems([]list.Item{
+	defaultList := list.New([]list.Item{}, list.NewDefaultDelegate(), width/divisor, height)
+	m.lists = []list.Model{defaultList, defaultList, defaultList}
+	//init todos
+	m.lists[todo].Title = "Options"
+	m.lists[todo].SetItems([]list.Item{
 		Task{status: todo, title: "Invade Taiwan", description: "You show great spirit. Nom Nom the chips"},
 		Task{status: inProgress, title: "Invade Russia", description: "Borscht and conquest"},
 		Task{status: done, title: "Invade Japan", description: "All their islands are belong to us."},
+	})
+	//in progress
+	m.lists[todo].Title = "In Progress"
+	m.lists[todo].SetItems([]list.Item{
+		Task{status: todo, title: "Drink Tea", description: "Good leaves."},
+		Task{status: inProgress, title: "Make plans", description: "One year, two year, ten year, thirty year."},
+		Task{status: done, title: "Make Boats", description: "Boats are good."},
 	})
 
 }
@@ -69,12 +82,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.initList(msg.Width, msg.Height)
 	}
 	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
+	m.lists[m.focused], cmd = m.lists[m.focused].Update(msg)
 	return m, cmd
 }
 
 func (m Model) View() string {
-	return m.list.View()
+	if m.loaded {
+		return lipgloss.JoinHorizontal(lipgloss.Left, m.lists[todo].View(), m.lists[inProgress].View(), m.lists[done].View())
+	} else {
+		return "Loading..."
+	}
 }
 
 func main() {
