@@ -49,7 +49,7 @@ func (m *Model) initList(width, height int) {
 	m.list.SetItems([]list.Item{
 		Task{status: todo, title: "Invade Taiwan", description: "You show great spirit. Nom Nom the chips"},
 		Task{status: inProgress, title: "Invade Russia", description: "Borscht and conquest"},
-		Task{status: done, title: "Invade Japan", description: "All their neko are belong to us."},
+		Task{status: done, title: "Invade Japan", description: "All their islands are belong to us."},
 	})
 
 }
