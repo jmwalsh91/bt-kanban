@@ -38,6 +38,14 @@ type Task struct {
 	description string
 }
 
+func (t *Task) Next() {
+	if t.status == done {
+		t.status = todo
+	} else {
+		t.status++
+	}
+}
+
 func (t Task) FilterValue() string {
 	return t.title
 }
@@ -75,6 +83,16 @@ func (m *Model) Prev() {
 	} else {
 		m.focused--
 	}
+}
+
+func (m *Model) MoveToNext() tea.Msg {
+	selectedItem := m.lists[m.focused].SelectedItem()
+	selectedTask := selectedItem.(Task)
+	m.lists[selectedTask.status].RemoveItem(m.lists[m.focused].Index())
+	selectedTask.Next()
+	m.lists[selectedTask.status].InsertItem(len(m.lists[selectedTask.status].Items())-1, list.Item(selectedTask))
+
+	return nil
 }
 
 func (m *Model) initList(width, height int) {
